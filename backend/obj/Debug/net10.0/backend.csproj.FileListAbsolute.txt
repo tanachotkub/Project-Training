@@ -1,0 +1,15 @@
+D:\Project_Total\Project-Training\Project-Training\backend\bin\Debug\net10.0\backend.exe
+D:\Project_Total\Project-Training\Project-Training\backend\bin\Debug\net10.0\backend.deps.json
+D:\Project_Total\Project-Training\Project-Training\backend\bin\Debug\net10.0\backend.runtimeconfig.json
+D:\Project_Total\Project-Training\Project-Training\backend\bin\Debug\net10.0\backend.dll
+D:\Project_Total\Project-Training\Project-Training\backend\bin\Debug\net10.0\backend.pdb
+D:\Project_Total\Project-Training\Project-Training\backend\obj\Debug\net10.0\backend.GeneratedMSBuildEditorConfig.editorconfig
+D:\Project_Total\Project-Training\Project-Training\backend\obj\Debug\net10.0\backend.AssemblyInfoInputs.cache
+D:\Project_Total\Project-Training\Project-Training\backend\obj\Debug\net10.0\backend.AssemblyInfo.cs
+D:\Project_Total\Project-Training\Project-Training\backend\obj\Debug\net10.0\backend.csproj.CoreCompileInputs.cache
+D:\Project_Total\Project-Training\Project-Training\backend\obj\Debug\net10.0\backend.sourcelink.json
+D:\Project_Total\Project-Training\Project-Training\backend\obj\Debug\net10.0\backend.dll
+D:\Project_Total\Project-Training\Project-Training\backend\obj\Debug\net10.0\refint\backend.dll
+D:\Project_Total\Project-Training\Project-Training\backend\obj\Debug\net10.0\backend.pdb
+D:\Project_Total\Project-Training\Project-Training\backend\obj\Debug\net10.0\backend.genruntimeconfig.cache
+D:\Project_Total\Project-Training\Project-Training\backend\obj\Debug\net10.0\ref\backend.dll
