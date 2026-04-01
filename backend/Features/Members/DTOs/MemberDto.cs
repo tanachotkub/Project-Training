@@ -1,0 +1,1 @@
+public record MemberDto(int Id, string? Username);
