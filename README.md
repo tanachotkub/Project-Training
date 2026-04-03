@@ -1,9 +1,31 @@
-# Project-Training
-# Backend-C#
-# 🏗️ โครงสร้าง Backend Project — ASP.NET Core + Clean Architecture
+# 🏗️ โครงสร้าง Backend — Service Layer Pattern
 
-> **Pattern:** Vertical Slice Architecture  
-> **Stack:** ASP.NET Core · EF Core · MySQL · MediatR · Serilog · Swagger
+> **Pattern:** Service Layer  
+> **Stack:** ASP.NET Core · EF Core · MySQL · Serilog · Swagger  
+> **เหมาะกับ:** Project ขนาดกลาง — สมดุลระหว่างความเรียบง่ายและการ scale
+
+---
+
+## โครงสร้าง Folder
+
+```
+backend/
+├── Controllers/
+│   └── MemberController.cs
+├── Services/
+│   ├── IMemberService.cs
+│   └── MemberService.cs
+├── Models/
+│   ├── Entities/
+│   │   └── Member.cs
+│   └── DTOs/
+│       └── MemberDto.cs
+├── Middlewares/
+│   └── ExceptionMiddleware.cs
+├── AppDbContext.cs
+├── appsettings.json
+└── Program.cs
+```
 
 ---
 
@@ -14,11 +36,9 @@ HTTP Request
     ↓
 Controllers/        — รับ request เข้ามา
     ↓
-MediatR (Send)      — ส่งต่อ command/query
+Services/           — ประมวลผล business logic
     ↓
-Features/ Handler   — ประมวลผล business logic
-    ↓
-Repository          — Interface (Domain) ← Implement (Infrastructure)
+AppDbContext        — query MySQL ผ่าน EF Core
     ↓
 MySQL Database
 ```
@@ -27,63 +47,73 @@ MySQL Database
 
 ## 📁 Controllers/
 
-**หน้าที่:** ประตูรับ HTTP request — ไม่มี business logic อยู่ที่นี่เลย
-
-รับ request เข้ามาแล้วโยนให้ MediatR จัดการต่อทันที  
-ไม่ query database, ไม่คำนวณ, ไม่แปลงข้อมูลเอง
+**หน้าที่:** รับ HTTP request แล้วส่งต่อให้ Service — ไม่มี logic เอง
 
 ```csharp
-[HttpGet]
-public async Task<IActionResult> GetAll()
+[ApiController]
+[Route("api/[controller]")]
+public class MemberController : ControllerBase
 {
-    var result = await _mediator.Send(new GetMembersQuery());
-    return Ok(result);
+    private readonly IMemberService _memberService;
+
+    public MemberController(IMemberService memberService)
+        => _memberService = memberService;
+
+    [HttpGet]
+    public async Task<IActionResult> GetAll()
+    {
+        var members = await _memberService.GetAllAsync();
+        return Ok(members);
+    }
 }
 ```
 
+> Controller รู้จักแค่ `IMemberService` — ไม่แตะ Database โดยตรง
+
 ---
 
-## 📁 Features/
+## 📁 Services/
 
-**หน้าที่:** จัดกลุ่ม code ตาม feature (Vertical Slice)
+**หน้าที่:** Business logic ทั้งหมดอยู่ที่นี่ — Controller และ Database คุยกันผ่าน Service
 
-ทุกอย่างที่เกี่ยวกับ `Members` อยู่ใน `Features/Members/` หมด  
-ไม่ต้องกระโดดหาไฟล์ข้ามหลาย folder
-
-### Commands/ — Write Operations
-สำหรับ action ที่ **เปลี่ยนแปลงข้อมูล** (Create, Update, Delete)
-
-```
-CreateMemberCommand.cs   → บอกว่าต้องการข้อมูลอะไร
-CreateMemberHandler.cs   → ทำงานจริง
-```
-
-### Queries/ — Read Operations
-สำหรับ action ที่ **แค่ดึงข้อมูล** ไม่เปลี่ยนแปลงอะไร
-
-```
-GetMembersQuery.cs       → query + handler รวมไฟล์เดียว
-```
-
-### DTOs/ — Data Transfer Objects
-รูปแบบข้อมูลที่ส่งออกไปให้ client — ไม่ expose Entity ตรงๆ
+### `IMemberService.cs` — กำหนดสัญญา
 
 ```csharp
-public record MemberDto(int Id, string? Username);
-// ไม่มี Password — client ไม่ควรเห็น
+public interface IMemberService
+{
+    Task<List<MemberDto>> GetAllAsync();
+}
 ```
+
+### `MemberService.cs` — ทำงานจริง
+
+```csharp
+public class MemberService : IMemberService
+{
+    private readonly AppDbContext _db;
+
+    public MemberService(AppDbContext db) => _db = db;
+
+    public async Task<List<MemberDto>> GetAllAsync()
+    {
+        return await _db.Members
+            .Select(m => new MemberDto(m.Id, m.Username))
+            .ToListAsync();
+    }
+}
+```
+
+> ทำไมต้องมี Interface?  
+> — ง่ายต่อการ mock ตอน Unit Test  
+> — เปลี่ยน implement ได้โดยไม่แตะ Controller
 
 ---
 
-## 📁 Domain/
+## 📁 Models/
 
-**หน้าที่:** หัวใจของ application — ไม่รู้จัก database หรือ framework ใดๆ
+**หน้าที่:** เก็บโครงสร้างข้อมูล แบ่งเป็น 2 ชั้น
 
-เป็นส่วนที่ stable ที่สุด ไม่ค่อยเปลี่ยน  
-ถ้าอยากเปลี่ยนจาก MySQL เป็น PostgreSQL → Domain ไม่ต้องแตะ
-
-### Entities/
-Business object หลักของระบบ
+### `Entities/Member.cs` — map กับ table ใน MySQL
 
 ```csharp
 public class Member
@@ -94,166 +124,183 @@ public class Member
 }
 ```
 
-### Interfaces/
-กำหนด "สัญญา" ว่า repository ต้องทำอะไรได้บ้าง  
-ไม่สนใจว่าจะ implement ด้วย EF Core, Dapper หรืออะไรก็ตาม
+### `DTOs/MemberDto.cs` — รูปแบบที่ส่งให้ client
 
 ```csharp
-public interface IMemberRepository
-{
-    Task<List<Member>> GetAllAsync();
-}
+public record MemberDto(int Id, string? Username);
+// Password ไม่ส่งออกไป — client ไม่ควรเห็น
 ```
+
+> **Entity** = ตรงกับ DB  
+> **DTO** = ตรงกับ client — กรอง field ที่ไม่ควรเปิดเผยออก
 
 ---
 
-## 📁 Infrastructure/
+## 📄 AppDbContext.cs
 
-**หน้าที่:** ส่วนที่ติดต่อโลกภายนอก — Database, Email, Storage, API ภายนอก
-
-Implement interface ที่ Domain กำหนดไว้  
-ถ้าอยากเปลี่ยน database → แก้แค่ที่นี่ที่เดียว
-
-### Persistence/
-ตั้งค่า EF Core และ mapping ระหว่าง Entity กับ table ใน MySQL
+**หน้าที่:** ตั้งค่า EF Core — map Entity กับ table ใน MySQL
 
 ```csharp
 public class AppDbContext : DbContext
 {
+    public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
+
     public DbSet<Member> Members => Set<Member>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Member>(entity =>
         {
-            entity.ToTable("member");           // ชื่อ table ใน MySQL
+            entity.ToTable("member");                                    // ชื่อ table ใน MySQL
+            entity.HasKey(e => e.Id);
             entity.Property(e => e.Id).HasColumnName("id");
-            entity.Property(e => e.Username).HasColumnName("username");
+            entity.Property(e => e.Username).HasColumnName("username").HasMaxLength(50);
+            entity.Property(e => e.Password).HasColumnName("password").HasMaxLength(50);
         });
     }
 }
 ```
 
-### Repositories/
-Implement interface จาก Domain — ใช้ EF Core จริงๆ ที่นี่
-
-```csharp
-public class MemberRepository : IMemberRepository
-{
-    private readonly AppDbContext _db;
-    public MemberRepository(AppDbContext db) => _db = db;
-
-    public async Task<List<Member>> GetAllAsync()
-        => await _db.Members.ToListAsync();
-}
-```
-
 ---
 
-## 📁 Extensions/
+## 📁 Middlewares/
 
-**หน้าที่:** รวม code ลงทะเบียน service (DI) ไว้ที่เดียว
-
-ทำให้ `Program.cs` สะอาด — เพิ่ม service ใหม่มาแก้แค่ไฟล์นี้
+**หน้าที่:** code ที่ทำงานอัตโนมัติทุก request — จับ Exception ก่อนถึง client
 
 ```csharp
-public static IServiceCollection AddInfrastructure(
-    this IServiceCollection services, IConfiguration config)
+public class ExceptionMiddleware
 {
-    // Database
-    services.AddDbContext<AppDbContext>(...);
+    private readonly RequestDelegate _next;
+    private readonly ILogger<ExceptionMiddleware> _logger;
 
-    // Repositories — เพิ่ม feature ใหม่ เพิ่มที่นี่
-    services.AddScoped<IMemberRepository, MemberRepository>();
-
-    return services;
-}
-```
-
-เรียกใช้ใน `Program.cs` แค่บรรทัดเดียว:
-```csharp
-builder.Services.AddInfrastructure(builder.Configuration);
-```
-
----
-
-## 📁 Middleware/
-
-**หน้าที่:** code ที่ทำงานอัตโนมัติทุก request — ก่อนและหลัง controller รับงาน
-
-ใช้สำหรับ: จับ Exception, Logging, Auth, Rate Limiting
-
-```csharp
-public async Task InvokeAsync(HttpContext ctx)
-{
-    try
+    public ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddleware> logger)
     {
-        await _next(ctx);   // ปล่อยให้ request ผ่านไปก่อน
+        _next = next;
+        _logger = logger;
     }
-    catch (Exception ex)
+
+    public async Task InvokeAsync(HttpContext ctx)
     {
-        // ถ้ามี error ใดๆ ในระบบ จะมาจบที่นี่
-        ctx.Response.StatusCode = 500;
-        await ctx.Response.WriteAsJsonAsync(new { error = ex.Message });
+        try
+        {
+            await _next(ctx);           // ปล่อย request ผ่านไปก่อน
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unhandled exception");
+            ctx.Response.StatusCode = 500;
+            ctx.Response.ContentType = "application/json";
+            await ctx.Response.WriteAsJsonAsync(new
+            {
+                status = 500,
+                message = "Internal Server Error",
+                detail = ex.Message
+            });
+        }
     }
 }
 ```
+
+> ถ้าไม่มี Middleware — error จะส่งออกไปในรูปแบบที่ไม่สวย และอาจเปิดเผย stack trace ให้ client เห็น
+
+---
+
+## 📄 appsettings.json
+
+**หน้าที่:** เก็บ config ทั้งหมด — connection string, log level
+
+```json
+{
+  "ConnectionStrings": {
+    "Default": "Server=localhost;Port=3306;Database=myapp_db;User=root;Password=yourpassword;"
+  },
+  "Serilog": {
+    "MinimumLevel": "Information",
+    "WriteTo": [{ "Name": "Console" }]
+  },
+  "AllowedHosts": "*"
+}
+```
+
+> ⚠️ อย่า commit password จริงขึ้น Git  
+> ใช้ `appsettings.Development.json` หรือ Environment Variables แทน
 
 ---
 
 ## 📄 Program.cs
 
-**หน้าที่:** จุดเริ่มต้นของ application — bootstrap ทุกอย่าง
+**หน้าที่:** จุดเริ่มต้นของ app — ลงทะเบียน service และ middleware ทั้งหมด
 
 ```csharp
+using Microsoft.EntityFrameworkCore;
+using Serilog;
+
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Host.UseSerilog((ctx, config) =>
+    config.ReadFrom.Configuration(ctx.Configuration));
+
 builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddMediatR(...);
-builder.Services.AddInfrastructure(builder.Configuration); // ← Extensions
+
+// Database
+var connectionString = builder.Configuration.GetConnectionString("Default");
+builder.Services.AddDbContext<AppDbContext>(opt =>
+    opt.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
+
+// Services — เพิ่ม feature ใหม่ เพิ่มที่นี่
+builder.Services.AddScoped<IMemberService, MemberService>();
 
 var app = builder.Build();
 
+// Middleware
+app.UseMiddleware<ExceptionMiddleware>();
+
 app.UseSwagger();
 app.UseSwaggerUI();
+
+app.UseHttpsRedirection();
+app.UseAuthorization();
 app.MapControllers();
 app.Run();
 ```
 
 ---
 
-## 📄 appsettings.json
+## 📦 Packages ที่ใช้
 
-**หน้าที่:** เก็บ config ทั้งหมด — connection string, logging level, secrets
-
-```json
-{
-  "ConnectionStrings": {
-    "Default": "Server=localhost;Port=3306;Database=myapp_db;User=root;Password=..."
-  },
-  "Serilog": {
-    "MinimumLevel": "Information",
-    "WriteTo": [{ "Name": "Console" }]
-  }
-}
-```
-
-> **หมายเหตุ:** ไม่ commit `appsettings.json` ที่มี password จริงขึ้น Git  
-> ใช้ `appsettings.Development.json` หรือ Environment Variables แทน
+| Package | หน้าที่ |
+|---|---|
+| `Pomelo.EntityFrameworkCore.MySql 9.0.0` | เชื่อมต่อ MySQL |
+| `Microsoft.EntityFrameworkCore.Tools 9.0.0` | Migration commands |
+| `Microsoft.EntityFrameworkCore.Relational 9.0.0` | EF Core base |
+| `Serilog.AspNetCore` | Structured logging |
+| `Swashbuckle.AspNetCore` | Swagger UI |
 
 ---
 
-## สรุปหน้าที่ในหนึ่งบรรทัด
+## สรุปหน้าที่แต่ละส่วน
 
-| Folder | หน้าที่ |
+| ไฟล์/Folder | หน้าที่ |
 |---|---|
-| `Controllers/` | รับ HTTP — ส่งต่อ MediatR |
-| `Features/` | Business logic จัดตาม feature |
-| `Domain/` | Entity + Interface — ไม่รู้จัก DB |
-| `Infrastructure/` | EF Core + MySQL + Implement repos |
-| `Extensions/` | ลงทะเบียน DI services |
-| `Middleware/` | จัดการ error ทุก request |
-| `Program.cs` | Bootstrap app |
+| `Controllers/` | รับ HTTP — ส่งต่อ Service |
+| `Services/` | Business logic ทั้งหมด |
+| `Models/Entities/` | โครงสร้างตรงกับ DB |
+| `Models/DTOs/` | โครงสร้างที่ส่งให้ client |
+| `Middlewares/` | จับ error ทุก request |
+| `AppDbContext.cs` | EF Core + MySQL mapping |
+| `Program.cs` | Bootstrap + ลงทะเบียน service |
 | `appsettings.json` | Config ทั้งหมด |
-# Frontend-NextJS
+
+---
+
+## เปรียบเทียบกับ Pattern อื่น
+
+| | Simple MVC | **Service Layer** | Clean Architecture |
+|---|---|---|---|
+| Setup | 5 นาที | **15 นาที** | 30+ นาที |
+| Business logic อยู่ที่ | Controller | **Service** | Handler |
+| Testing | ยาก | **ทำได้** | ง่ายมาก |
+| Scale | จำกัด | **ดี** | ดีมาก |
+| เหมาะกับ | Prototype | **Project จริง** | Enterprise |
