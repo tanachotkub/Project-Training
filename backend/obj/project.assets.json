@@ -2921,11 +2921,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\Train_Get_On\\C#\\backend.csproj",
+      "projectUniqueName": "D:\\Project_Total\\miniproject\\Project-Training\\backend\\backend.csproj",
       "projectName": "backend",
-      "projectPath": "D:\\Train_Get_On\\C#\\backend.csproj",
+      "projectPath": "D:\\Project_Total\\miniproject\\Project-Training\\backend\\backend.csproj",
       "packagesPath": "C:\\Users\\tanac\\.nuget\\packages\\",
-      "outputPath": "D:\\Train_Get_On\\C#\\obj\\",
+      "outputPath": "D:\\Project_Total\\miniproject\\Project-Training\\backend\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
