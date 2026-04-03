@@ -1,306 +1,144 @@
-# 🏗️ โครงสร้าง Backend — Service Layer Pattern
-
-> **Pattern:** Service Layer  
-> **Stack:** ASP.NET Core · EF Core · MySQL · Serilog · Swagger  
-> **เหมาะกับ:** Project ขนาดกลาง — สมดุลระหว่างความเรียบง่ายและการ scale
+# 📚 Mini Project: ระบบจัดการคอร์สเรียนออนไลน์ (Mini Course Management System)
 
 ---
 
-## โครงสร้าง Folder
+## 📌 แนวคิดของระบบ
 
-```
-backend/
-├── Controllers/
-│   └── MemberController.cs
-├── Services/
-│   ├── IMemberService.cs
-│   └── MemberService.cs
-├── Models/
-│   ├── Entities/
-│   │   └── Member.cs
-│   └── DTOs/
-│       └── MemberDto.cs
-├── Middlewares/
-│   └── ExceptionMiddleware.cs
-├── AppDbContext.cs
-├── appsettings.json
-└── Program.cs
-```
+ระบบจัดการคอร์สเรียนออนไลน์ถูกออกแบบมาเพื่อให้ผู้ใช้งานสามารถสมัครสมาชิก เข้าสู่ระบบ เลือกลงทะเบียนเรียนคอร์ส และติดตามความคืบหน้าในการเรียนของตนเองได้อย่างเป็นระบบ
+
+ในส่วนของผู้ดูแลระบบ (Admin) สามารถสร้างคอร์ส เพิ่มบทเรียน และติดตามข้อมูลการลงทะเบียนของผู้เรียนได้
+
+ระบบนี้มีโครงสร้างฐานข้อมูลแบบ Relational Database และมีความสัมพันธ์หลายรูปแบบ เช่น One-to-Many และ Many-to-Many
 
 ---
 
-## การไหลของ Request
+## 🎯 วัตถุประสงค์ของโครงการ
 
-```
-HTTP Request
-    ↓
-Controllers/        — รับ request เข้ามา
-    ↓
-Services/           — ประมวลผล business logic
-    ↓
-AppDbContext        — query MySQL ผ่าน EF Core
-    ↓
-MySQL Database
-```
+- เพื่อพัฒนาระบบจัดการคอร์สเรียนที่มีโครงสร้างฐานข้อมูลชัดเจน  
+- เพื่อฝึกการออกแบบความสัมพันธ์ของตาราง (Database Relationship)  
+- เพื่อฝึกการทำระบบ CRUD ครบทุกส่วน  
+- เพื่อให้สามารถต่อยอดเป็นระบบที่ใช้งานจริงได้  
 
 ---
 
-## 📁 Controllers/
+## 🧱 โครงสร้างฐานข้อมูล
 
-**หน้าที่:** รับ HTTP request แล้วส่งต่อให้ Service — ไม่มี logic เอง
-
-```csharp
-[ApiController]
-[Route("api/[controller]")]
-public class MemberController : ControllerBase
-{
-    private readonly IMemberService _memberService;
-
-    public MemberController(IMemberService memberService)
-        => _memberService = memberService;
-
-    [HttpGet]
-    public async Task<IActionResult> GetAll()
-    {
-        var members = await _memberService.GetAllAsync();
-        return Ok(members);
-    }
-}
-```
-
-> Controller รู้จักแค่ `IMemberService` — ไม่แตะ Database โดยตรง
+ระบบประกอบด้วย 5 ตารางหลักดังนี้:
 
 ---
 
-## 📁 Services/
+### 1️⃣ ตาราง `member`
 
-**หน้าที่:** Business logic ทั้งหมดอยู่ที่นี่ — Controller และ Database คุยกันผ่าน Service
+ใช้เก็บข้อมูลผู้ใช้งานของระบบ
 
-### `IMemberService.cs` — กำหนดสัญญา
+| Field     | Type        | Description        |
+|----------|------------|-------------------|
+| id       | INT (PK)   | รหัสผู้ใช้งาน     |
+| username | VARCHAR    | ชื่อผู้ใช้งาน     |
+| password | VARCHAR    | รหัสผ่าน          |
 
-```csharp
-public interface IMemberService
-{
-    Task<List<MemberDto>> GetAllAsync();
-}
-```
+**ความสัมพันธ์**
 
-### `MemberService.cs` — ทำงานจริง
-
-```csharp
-public class MemberService : IMemberService
-{
-    private readonly AppDbContext _db;
-
-    public MemberService(AppDbContext db) => _db = db;
-
-    public async Task<List<MemberDto>> GetAllAsync()
-    {
-        return await _db.Members
-            .Select(m => new MemberDto(m.Id, m.Username))
-            .ToListAsync();
-    }
-}
-```
-
-> ทำไมต้องมี Interface?  
-> — ง่ายต่อการ mock ตอน Unit Test  
-> — เปลี่ยน implement ได้โดยไม่แตะ Controller
+- ผู้ใช้งาน 1 คน สามารถสร้างคอร์สได้หลายคอร์ส  
+- ผู้ใช้งาน 1 คน สามารถลงทะเบียนได้หลายคอร์ส  
+- ผู้ใช้งาน 1 คน สามารถมีความคืบหน้าเรียนหลายบทเรียน  
 
 ---
 
-## 📁 Models/
+### 2️⃣ ตาราง `course`
 
-**หน้าที่:** เก็บโครงสร้างข้อมูล แบ่งเป็น 2 ชั้น
+ใช้เก็บข้อมูลคอร์สเรียน
 
-### `Entities/Member.cs` — map กับ table ใน MySQL
+| Field       | Type        | Description        |
+|------------|------------|-------------------|
+| id         | INT (PK)   | รหัสคอร์ส        |
+| title      | VARCHAR    | ชื่อคอร์ส        |
+| description| TEXT       | รายละเอียดคอร์ส  |
+| created_by | INT (FK)   | ผู้สร้างคอร์ส     |
 
-```csharp
-public class Member
-{
-    public int Id { get; set; }
-    public string? Username { get; set; }
-    public string? Password { get; set; }
-}
-```
+**ความสัมพันธ์**
 
-### `DTOs/MemberDto.cs` — รูปแบบที่ส่งให้ client
-
-```csharp
-public record MemberDto(int Id, string? Username);
-// Password ไม่ส่งออกไป — client ไม่ควรเห็น
-```
-
-> **Entity** = ตรงกับ DB  
-> **DTO** = ตรงกับ client — กรอง field ที่ไม่ควรเปิดเผยออก
+- คอร์ส 1 คอร์ส มีบทเรียนได้หลายบท  
+- คอร์ส 1 คอร์ส มีผู้เรียนได้หลายคน  
 
 ---
 
-## 📄 AppDbContext.cs
+### 3️⃣ ตาราง `lesson`
 
-**หน้าที่:** ตั้งค่า EF Core — map Entity กับ table ใน MySQL
+ใช้เก็บบทเรียนภายในแต่ละคอร์ส
 
-```csharp
-public class AppDbContext : DbContext
-{
-    public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
+| Field     | Type        | Description        |
+|----------|------------|-------------------|
+| id       | INT (PK)   | รหัสบทเรียน       |
+| course_id| INT (FK)   | อ้างอิงคอร์ส      |
+| title    | VARCHAR    | ชื่อบทเรียน       |
+| content  | TEXT       | เนื้อหาบทเรียน     |
+| video_url| VARCHAR    | ลิงก์วิดีโอ        |
 
-    public DbSet<Member> Members => Set<Member>();
+**ความสัมพันธ์**
 
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
-    {
-        modelBuilder.Entity<Member>(entity =>
-        {
-            entity.ToTable("member");                                    // ชื่อ table ใน MySQL
-            entity.HasKey(e => e.Id);
-            entity.Property(e => e.Id).HasColumnName("id");
-            entity.Property(e => e.Username).HasColumnName("username").HasMaxLength(50);
-            entity.Property(e => e.Password).HasColumnName("password").HasMaxLength(50);
-        });
-    }
-}
-```
+- บทเรียนหลายบท อยู่ในคอร์สเดียว  
+- บทเรียนสามารถมีผู้เรียนหลายคน  
 
 ---
 
-## 📁 Middlewares/
+### 4️⃣ ตาราง `enrollment`
 
-**หน้าที่:** code ที่ทำงานอัตโนมัติทุก request — จับ Exception ก่อนถึง client
+ใช้เก็บข้อมูลการลงทะเบียนเรียน (Many-to-Many)
 
-```csharp
-public class ExceptionMiddleware
-{
-    private readonly RequestDelegate _next;
-    private readonly ILogger<ExceptionMiddleware> _logger;
+| Field       | Type        | Description            |
+|------------|------------|-----------------------|
+| id         | INT (PK)   | รหัสการลงทะเบียน      |
+| member_id  | INT (FK)   | ผู้เรียน              |
+| course_id  | INT (FK)   | คอร์สที่ลงทะเบียน     |
+| enrolled_at| DATETIME   | วันที่ลงทะเบียน       |
 
-    public ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddleware> logger)
-    {
-        _next = next;
-        _logger = logger;
-    }
+**ความสัมพันธ์**
 
-    public async Task InvokeAsync(HttpContext ctx)
-    {
-        try
-        {
-            await _next(ctx);           // ปล่อย request ผ่านไปก่อน
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Unhandled exception");
-            ctx.Response.StatusCode = 500;
-            ctx.Response.ContentType = "application/json";
-            await ctx.Response.WriteAsJsonAsync(new
-            {
-                status = 500,
-                message = "Internal Server Error",
-                detail = ex.Message
-            });
-        }
-    }
-}
-```
-
-> ถ้าไม่มี Middleware — error จะส่งออกไปในรูปแบบที่ไม่สวย และอาจเปิดเผย stack trace ให้ client เห็น
+- ผู้ใช้งาน 1 คน ลงทะเบียนได้หลายคอร์ส  
+- คอร์ส 1 คอร์ส มีผู้เรียนหลายคน  
 
 ---
 
-## 📄 appsettings.json
+### 5️⃣ ตาราง `progress`
 
-**หน้าที่:** เก็บ config ทั้งหมด — connection string, log level
+ใช้ติดตามความคืบหน้าการเรียน
 
-```json
-{
-  "ConnectionStrings": {
-    "Default": "Server=localhost;Port=3306;Database=myapp_db;User=root;Password=yourpassword;"
-  },
-  "Serilog": {
-    "MinimumLevel": "Information",
-    "WriteTo": [{ "Name": "Console" }]
-  },
-  "AllowedHosts": "*"
-}
-```
+| Field        | Type        | Description              |
+|-------------|------------|--------------------------|
+| id          | INT (PK)   | รหัสข้อมูลความคืบหน้า   |
+| member_id   | INT (FK)   | ผู้เรียน                 |
+| lesson_id   | INT (FK)   | บทเรียน                  |
+| is_completed| BOOLEAN    | สถานะเรียนจบ            |
+| completed_at| DATETIME   | วันที่เรียนจบ            |
 
-> ⚠️ อย่า commit password จริงขึ้น Git  
-> ใช้ `appsettings.Development.json` หรือ Environment Variables แทน
+**ความสัมพันธ์**
+
+- ผู้เรียนสามารถมีสถานะความคืบหน้าหลายบทเรียน  
+- บทเรียนหนึ่งบท มีผู้เรียนหลายคน  
 
 ---
 
-## 📄 Program.cs
+## 🔗 สรุปความสัมพันธ์ของระบบ
 
-**หน้าที่:** จุดเริ่มต้นของ app — ลงทะเบียน service และ middleware ทั้งหมด
-
-```csharp
-using Microsoft.EntityFrameworkCore;
-using Serilog;
-
-var builder = WebApplication.CreateBuilder(args);
-
-builder.Host.UseSerilog((ctx, config) =>
-    config.ReadFrom.Configuration(ctx.Configuration));
-
-builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-
-// Database
-var connectionString = builder.Configuration.GetConnectionString("Default");
-builder.Services.AddDbContext<AppDbContext>(opt =>
-    opt.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
-
-// Services — เพิ่ม feature ใหม่ เพิ่มที่นี่
-builder.Services.AddScoped<IMemberService, MemberService>();
-
-var app = builder.Build();
-
-// Middleware
-app.UseMiddleware<ExceptionMiddleware>();
-
-app.UseSwagger();
-app.UseSwaggerUI();
-
-app.UseHttpsRedirection();
-app.UseAuthorization();
-app.MapControllers();
-app.Run();
-```
+- Member → Course (1:N)  
+- Course → Lesson (1:N)  
+- Member ↔ Course ผ่าน Enrollment (N:M)  
+- Member ↔ Lesson ผ่าน Progress (N:M)  
 
 ---
 
-## 📦 Packages ที่ใช้
+## 🧑‍💻 ฟังก์ชันการทำงานของระบบ
 
-| Package | หน้าที่ |
-|---|---|
-| `Pomelo.EntityFrameworkCore.MySql 9.0.0` | เชื่อมต่อ MySQL |
-| `Microsoft.EntityFrameworkCore.Tools 9.0.0` | Migration commands |
-| `Microsoft.EntityFrameworkCore.Relational 9.0.0` | EF Core base |
-| `Serilog.AspNetCore` | Structured logging |
-| `Swashbuckle.AspNetCore` | Swagger UI |
+### 👤 ฝั่งผู้ใช้งาน (User)
 
----
-
-## สรุปหน้าที่แต่ละส่วน
-
-| ไฟล์/Folder | หน้าที่ |
-|---|---|
-| `Controllers/` | รับ HTTP — ส่งต่อ Service |
-| `Services/` | Business logic ทั้งหมด |
-| `Models/Entities/` | โครงสร้างตรงกับ DB |
-| `Models/DTOs/` | โครงสร้างที่ส่งให้ client |
-| `Middlewares/` | จับ error ทุก request |
-| `AppDbContext.cs` | EF Core + MySQL mapping |
-| `Program.cs` | Bootstrap + ลงทะเบียน service |
-| `appsettings.json` | Config ทั้งหมด |
+- สมัครสมาชิก  
+- เข้าสู่ระบบ  
+- ดูรายการคอร์สทั้งหมด  
+- ดูรายละเอียดคอร์ส  
+- ลงทะเบียนเรียน  
+- ดูบทเรียนในคอร์ส  
+- กดทำเครื่องหมายว่าเรียนจบ  
+- ดูเปอร์เซ็นต์ความคืบหน้าการเรียน  
 
 ---
-
-## เปรียบเทียบกับ Pattern อื่น
-
-| | Simple MVC | **Service Layer** | Clean Architecture |
-|---|---|---|---|
-| Setup | 5 นาที | **15 นาที** | 30+ นาที |
-| Business logic อยู่ที่ | Controller | **Service** | Handler |
-| Testing | ยาก | **ทำได้** | ง่ายมาก |
-| Scale | จำกัด | **ดี** | ดีมาก |
-| เหมาะกับ | Prototype | **Project จริง** | Enterprise |
