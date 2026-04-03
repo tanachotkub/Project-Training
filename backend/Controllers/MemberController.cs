@@ -1,18 +1,37 @@
-using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
-[Route("api/[controller]")]
-public class MembersController : ControllerBase
+[Route("api/member")]
+public class MemberController : ControllerBase
 {
-    private readonly IMediator _mediator;
+    private readonly IMemberService _memberService;
 
-    public MembersController(IMediator mediator) => _mediator = mediator;
+    public MemberController(IMemberService memberService)
+        => _memberService = memberService;
 
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
-        var result = await _mediator.Send(new GetMembersQuery());
-        return Ok(result);
+        var members = await _memberService.GetAllAsync();
+        return Ok(members);
+    }
+
+     // POST api/member/register
+      [HttpPost("register")]
+    public async Task<IActionResult> Register([FromBody] RegisterDto dto)
+    {
+        try
+        {
+            var member = await _memberService.RegisterAsync(dto);
+            return StatusCode(201, new
+            {
+                message = "Register success",
+                data = member
+            });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 }
