@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
@@ -11,6 +12,7 @@ public class MemberController : ControllerBase
 
     // GET api/member
     [HttpGet]
+    [Authorize]
     public async Task<IActionResult> GetAll()
     {
         var members = await _memberService.GetAllAsync();

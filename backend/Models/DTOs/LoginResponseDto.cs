@@ -1,0 +1,1 @@
+public record LoginResponseDto(int Id, string Username, string Token);
