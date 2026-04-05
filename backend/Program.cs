@@ -100,6 +100,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 // Services
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IMemberService, MemberService>();
+builder.Services.AddScoped<ICourseService, CourseService>();
+builder.Services.AddScoped<ILessonService, LessonService>();
 
 var app = builder.Build();
 
