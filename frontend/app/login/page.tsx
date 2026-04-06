@@ -1,38 +1,63 @@
 'use client'
 
 import Link from 'next/link'
-import { BookOpen, Eye, EyeOff, ArrowRight, Sparkles } from 'lucide-react'
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { BookOpen, Eye, EyeOff, Lock, User, ArrowRight, LogIn, Sparkles } from 'lucide-react'
+import Swal from 'sweetalert2'
 
 export default function Login() {
+  const router = useRouter()
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [form, setForm] = useState({ username: '', password: '' })
+  
   const API_URL = process.env.NEXT_PUBLIC_API_URL
+
+  // ฟังก์ชันช่วยตั้งค่าธีม SweetAlert ให้เหมือนกัน
+  const toast = (icon: 'success' | 'error', title: string, text?: string) => {
+    return Swal.fire({
+      icon,
+      title,
+      text,
+      background: '#1e293b', // slate-800
+      color: '#fff',
+      confirmButtonColor: '#3b82f6', // blue-500
+      timer: icon === 'success' ? 2000 : undefined,
+      showConfirmButton: icon !== 'success',
+    })
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
+    
     try {
       const res = await fetch(`${API_URL}/api/member/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form),
       })
-      const data = await res.json()
+      
+      const responseData = await res.json()
+
       if (res.ok) {
-        localStorage.setItem('token', data.token)
-        window.location.href = '/courses'
+        // เก็บ Token
+        localStorage.setItem('token', responseData.data.token)
+        
+        await toast('success', 'Welcome Back!', 'เข้าสู่ระบบสำเร็จ กำลังพาคุณไปหน้าคอร์สเรียน...')
+        
+        // ใช้ router.push เพื่อความรวดเร็ว
+        router.push('/courses')
       } else {
-        alert(data.message || 'Username or password is incorrect')
+        toast('error', 'Login Failed', responseData.message || 'Username หรือ Password ไม่ถูกต้อง')
       }
-    } catch {
-      alert('Connection error. Please try again.')
+    } catch (error) {
+      toast('error', 'Connection Error', 'ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้ กรุณาลองใหม่ภายหลัง')
     } finally {
       setIsLoading(false)
     }
   }
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 text-white flex flex-col">
       {/* Ambient blobs */}

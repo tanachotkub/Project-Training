@@ -1,0 +1,1 @@
+public record MarkProgressDto(int LessonId, bool IsCompleted);
