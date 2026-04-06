@@ -1,4 +1,4 @@
-// using Microsoft.EntityFrameworkCore;
+﻿// using Microsoft.EntityFrameworkCore;
 // using Serilog;
 
 // var builder = WebApplication.CreateBuilder(args);
@@ -109,7 +109,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins("http://localhost:5173") // URL frontend
+        policy.WithOrigins("http://localhost:3000") // URL frontend
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
