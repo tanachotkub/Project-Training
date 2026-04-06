@@ -134,6 +134,7 @@ D:\Train_Get_On\C#\obj\Debug\net10.0\ref\backend.dll
 D:\Train_Get_On\C#\bin\Debug\net10.0\BCrypt.Net-Next.dll
 D:\Project_Total\miniproject\Project-Training\backend\bin\Debug\net10.0\appsettings.Development.json
 D:\Project_Total\miniproject\Project-Training\backend\bin\Debug\net10.0\appsettings.json
+D:\Project_Total\miniproject\Project-Training\backend\bin\Debug\net10.0\backend.staticwebassets.runtime.json
 D:\Project_Total\miniproject\Project-Training\backend\bin\Debug\net10.0\backend.staticwebassets.endpoints.json
 D:\Project_Total\miniproject\Project-Training\backend\bin\Debug\net10.0\backend.exe
 D:\Project_Total\miniproject\Project-Training\backend\bin\Debug\net10.0\backend.deps.json
@@ -142,6 +143,7 @@ D:\Project_Total\miniproject\Project-Training\backend\bin\Debug\net10.0\backend.
 D:\Project_Total\miniproject\Project-Training\backend\bin\Debug\net10.0\backend.pdb
 D:\Project_Total\miniproject\Project-Training\backend\bin\Debug\net10.0\BCrypt.Net-Next.dll
 D:\Project_Total\miniproject\Project-Training\backend\bin\Debug\net10.0\Humanizer.dll
+D:\Project_Total\miniproject\Project-Training\backend\bin\Debug\net10.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
 D:\Project_Total\miniproject\Project-Training\backend\bin\Debug\net10.0\Microsoft.Bcl.AsyncInterfaces.dll
 D:\Project_Total\miniproject\Project-Training\backend\bin\Debug\net10.0\Microsoft.Build.Locator.dll
 D:\Project_Total\miniproject\Project-Training\backend\bin\Debug\net10.0\Microsoft.CodeAnalysis.dll
@@ -155,6 +157,12 @@ D:\Project_Total\miniproject\Project-Training\backend\bin\Debug\net10.0\Microsof
 D:\Project_Total\miniproject\Project-Training\backend\bin\Debug\net10.0\Microsoft.EntityFrameworkCore.Design.dll
 D:\Project_Total\miniproject\Project-Training\backend\bin\Debug\net10.0\Microsoft.EntityFrameworkCore.Relational.dll
 D:\Project_Total\miniproject\Project-Training\backend\bin\Debug\net10.0\Microsoft.Extensions.DependencyModel.dll
+D:\Project_Total\miniproject\Project-Training\backend\bin\Debug\net10.0\Microsoft.IdentityModel.Abstractions.dll
+D:\Project_Total\miniproject\Project-Training\backend\bin\Debug\net10.0\Microsoft.IdentityModel.JsonWebTokens.dll
+D:\Project_Total\miniproject\Project-Training\backend\bin\Debug\net10.0\Microsoft.IdentityModel.Logging.dll
+D:\Project_Total\miniproject\Project-Training\backend\bin\Debug\net10.0\Microsoft.IdentityModel.Protocols.dll
+D:\Project_Total\miniproject\Project-Training\backend\bin\Debug\net10.0\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
+D:\Project_Total\miniproject\Project-Training\backend\bin\Debug\net10.0\Microsoft.IdentityModel.Tokens.dll
 D:\Project_Total\miniproject\Project-Training\backend\bin\Debug\net10.0\Microsoft.OpenApi.dll
 D:\Project_Total\miniproject\Project-Training\backend\bin\Debug\net10.0\Mono.TextTemplating.dll
 D:\Project_Total\miniproject\Project-Training\backend\bin\Debug\net10.0\MySqlConnector.dll
@@ -177,6 +185,7 @@ D:\Project_Total\miniproject\Project-Training\backend\bin\Debug\net10.0\System.C
 D:\Project_Total\miniproject\Project-Training\backend\bin\Debug\net10.0\System.Composition.Hosting.dll
 D:\Project_Total\miniproject\Project-Training\backend\bin\Debug\net10.0\System.Composition.Runtime.dll
 D:\Project_Total\miniproject\Project-Training\backend\bin\Debug\net10.0\System.Composition.TypedParts.dll
+D:\Project_Total\miniproject\Project-Training\backend\bin\Debug\net10.0\System.IdentityModel.Tokens.Jwt.dll
 D:\Project_Total\miniproject\Project-Training\backend\bin\Debug\net10.0\cs\Microsoft.CodeAnalysis.resources.dll
 D:\Project_Total\miniproject\Project-Training\backend\bin\Debug\net10.0\de\Microsoft.CodeAnalysis.resources.dll
 D:\Project_Total\miniproject\Project-Training\backend\bin\Debug\net10.0\es\Microsoft.CodeAnalysis.resources.dll
@@ -255,6 +264,7 @@ D:\Project_Total\miniproject\Project-Training\backend\obj\Debug\net10.0\rjimswa.
 D:\Project_Total\miniproject\Project-Training\backend\obj\Debug\net10.0\rjsmrazor.dswa.cache.json
 D:\Project_Total\miniproject\Project-Training\backend\obj\Debug\net10.0\rjsmcshtml.dswa.cache.json
 D:\Project_Total\miniproject\Project-Training\backend\obj\Debug\net10.0\scopedcss\bundle\backend.styles.css
+D:\Project_Total\miniproject\Project-Training\backend\obj\Debug\net10.0\compressed\xjujh7e46n-{0}-y21y0jtly2-y21y0jtly2.gz
 D:\Project_Total\miniproject\Project-Training\backend\obj\Debug\net10.0\staticwebassets.build.json
 D:\Project_Total\miniproject\Project-Training\backend\obj\Debug\net10.0\staticwebassets.build.json.cache
 D:\Project_Total\miniproject\Project-Training\backend\obj\Debug\net10.0\staticwebassets.development.json
@@ -266,13 +276,3 @@ D:\Project_Total\miniproject\Project-Training\backend\obj\Debug\net10.0\refint\b
 D:\Project_Total\miniproject\Project-Training\backend\obj\Debug\net10.0\backend.pdb
 D:\Project_Total\miniproject\Project-Training\backend\obj\Debug\net10.0\backend.genruntimeconfig.cache
 D:\Project_Total\miniproject\Project-Training\backend\obj\Debug\net10.0\ref\backend.dll
-D:\Project_Total\miniproject\Project-Training\backend\bin\Debug\net10.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
-D:\Project_Total\miniproject\Project-Training\backend\bin\Debug\net10.0\Microsoft.IdentityModel.Abstractions.dll
-D:\Project_Total\miniproject\Project-Training\backend\bin\Debug\net10.0\Microsoft.IdentityModel.JsonWebTokens.dll
-D:\Project_Total\miniproject\Project-Training\backend\bin\Debug\net10.0\Microsoft.IdentityModel.Logging.dll
-D:\Project_Total\miniproject\Project-Training\backend\bin\Debug\net10.0\Microsoft.IdentityModel.Protocols.dll
-D:\Project_Total\miniproject\Project-Training\backend\bin\Debug\net10.0\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
-D:\Project_Total\miniproject\Project-Training\backend\bin\Debug\net10.0\Microsoft.IdentityModel.Tokens.dll
-D:\Project_Total\miniproject\Project-Training\backend\bin\Debug\net10.0\System.IdentityModel.Tokens.Jwt.dll
-D:\Project_Total\miniproject\Project-Training\backend\bin\Debug\net10.0\backend.staticwebassets.runtime.json
-D:\Project_Total\miniproject\Project-Training\backend\obj\Debug\net10.0\compressed\xjujh7e46n-{0}-y21y0jtly2-y21y0jtly2.gz
